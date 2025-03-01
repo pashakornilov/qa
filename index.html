@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="app">
+      <div class="quiz-container">
+        <div v-if="!selectedSection">
+          <div class="shuffle-controls">
+            <button
+              @click="toggleShuffleMode"
+              :class="{ 'button-enabled': shuffleEnabled }"
+            >
+              {{ shuffleEnabled ? 'Выключить' : 'Включить' }} перемешивание
+              вопросов
+            </button>
+            <button
+              @click="toggleAnswerShuffle"
+              :class="{ 'button-enabled': answerShuffleEnabled }"
+            >
+              {{ answerShuffleEnabled ? 'Выключить' : 'Включить' }}
+              перемешивание ответов
+            </button>
+          </div>
+
+          <div class="options">
+            <div
+              v-for="section in sections"
+              :key="section.id"
+              class="option"
+              @click="selectSection(section)"
+            >
+              {{ section.title }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Quiz content -->
+        <div v-else>
+          <div class="header">
+            <h2>
+              {{ selectedSection.title }} [{{ currentQuestionIndex + 1 }}/{{
+              selectedSection.questions.length }}]
+            </h2>
+            <button class="back-button" @click="backToSections">
+              ← Назад к темам
+            </button>
+          </div>
+
+          <div class="score-display">
+            <div class="score-item correct">Верно: {{ score }}</div>
+            <div class="score-item incorrect">
+              Не верно: {{ incorrectAnswers }}
+            </div>
+            <div class="score-item timer">
+              Время: {{ formatTime(elapsedTime) }}
+            </div>
+          </div>
+
+          <div class="question">
+            <p>{{ currentQuestion.text }}</p>
+          </div>
+          <div class="options">
+            <div
+              v-for="(option, index) in currentQuestion.options"
+              :key="index"
+              :class="['option', { 
+                             selected: selectedAnswers.includes(index),
+                             correct: isAnswerChecked && currentQuestion.correctAnswer.includes(index),
+                             wrong: isAnswerChecked && selectedAnswers.includes(index) && !currentQuestion.correctAnswer.includes(index)
+                         }]"
+              @click="toggleAnswer(index)"
+            >
+              {{ String.fromCharCode(65 + index) }}. {{ option }}
+            </div>
+          </div>
+          <div class="controls">
+            <button @click="checkAnswer" v-if="!isAnswerChecked">
+              Проверить ответ
+            </button>
+            <button @click="nextQuestion" v-if="isAnswerChecked">
+              {{ isLastQuestion ? 'Завершить тест' : 'Следующий вопрос' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        v-if="isLastQuestion && isAnswerChecked"
+        class="quiz-summary-overlay"
+      >
+        <div class="quiz-summary">
+          <h2>Результаты теста</h2>
+          <div class="summary-stats">
+            <div class="summary-item">
+              <span class="label">Верных ответов:</span>
+              <span class="value correct">{{ score }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Неверных ответов:</span>
+              <span class="value incorrect">{{ incorrectAnswers }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Общее время:</span>
+              <span class="value timer">{{ formatTime(elapsedTime) }}</span>
+            </div>
+          </div>
+          <button class="back-to-sections" @click="backToSections">
+            Вернуться к темам
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            title: "СМЭ тесты",
+            selectedSection: null,
+            currentQuestionIndex: 0,
+            selectedAnswers: [],
+            isAnswerChecked: false,
+            score: 0,
+            incorrectAnswers: 0,
+            elapsedTime: 0,
+            timer: null,
+            shuffleEnabled: false, 
+            answerShuffleEnabled: false, 
+            sections: [],
+          };
+        },
+        computed: {
+          currentQuestion() {
+            return (
+              this.selectedSection?.questions[this.currentQuestionIndex] || {}
+            );
+          },
+          isLastQuestion() {
+            return (
+              this.currentQuestionIndex ===
+              this.selectedSection?.questions.length - 1
+            );
+          },
+          isCorrectAnswer() {
+            return (
+              this.selectedAnswers.every((answer) =>
+                this.currentQuestion.correctAnswer.includes(answer)
+              ) &&
+              this.selectedAnswers.length ===
+                this.currentQuestion.correctAnswer.length
+            );
+          },
+        },
+        methods: {
+          selectSection(section) {
+            this.selectedSection = JSON.parse(JSON.stringify(section)); 
+
+            if (this.shuffleEnabled) {
+              this.selectedSection.questions = this.shuffleArray(
+                this.selectedSection.questions
+              );
+            }
+
+            if (this.answerShuffleEnabled) {
+              this.selectedSection.questions.forEach((question) => {
+                const correctAnswers = question.correctAnswer.map(
+                  (idx) => question.options[idx]
+                );
+                question.options = this.shuffleArray(question.options);
+                // Update correct answer indices after shuffling
+                question.correctAnswer = correctAnswers.map((answer) =>
+                  question.options.indexOf(answer)
+                );
+              });
+            }
+
+            this.currentQuestionIndex = 0;
+            this.selectedAnswers = [];
+            this.isAnswerChecked = false;
+            this.elapsedTime = 0;
+            this.startTimer();
+          },
+          toggleAnswerShuffle() {
+            this.answerShuffleEnabled = !this.answerShuffleEnabled;
+          },
+
+          backToSections() {
+            this.selectedSection = null;
+            this.currentQuestionIndex = 0;
+            this.selectedAnswers = [];
+            this.isAnswerChecked = false;
+            this.stopTimer();
+            this.score = 0;
+            this.incorrectAnswers = 0;
+            this.elapsedTime = 0;
+          },
+
+          startTimer() {
+            this.stopTimer(); // Clear any existing timer
+            this.timer = setInterval(() => {
+              this.elapsedTime++;
+            }, 1000);
+          },
+
+          stopTimer() {
+            if (this.timer) {
+              clearInterval(this.timer);
+              this.timer = null;
+            }
+          },
+          toggleShuffleMode() {
+            this.shuffleEnabled = !this.shuffleEnabled;
+          },
+          shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+          },
+
+          formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+          },
+          toggleAnswer(index) {
+            if (this.isAnswerChecked) return;
+
+            const position = this.selectedAnswers.indexOf(index);
+            if (position === -1) {
+              this.selectedAnswers.push(index);
+            } else {
+              this.selectedAnswers.splice(position, 1);
+            }
+          },
+          checkAnswer() {
+            this.isAnswerChecked = true;
+            if (this.isCorrectAnswer) {
+              this.score++;
+            } else {
+              this.incorrectAnswers++;
+            }
+
+            // Stop timer if this is the last question
+            if (this.isLastQuestion) {
+              this.stopTimer();
+            }
+          },
+          nextQuestion() {
+            this.selectedAnswers = [];
+            this.isAnswerChecked = false;
+
+            if (
+              this.currentQuestionIndex <
+              this.selectedSection.questions.length - 1
+            ) {
+              this.currentQuestionIndex++;
+            }
+          },
+          shuffleSections() {
+            for (let i = this.sections.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [this.sections[i], this.sections[j]] = [
+                this.sections[j],
+                this.sections[i],
+              ];
+            }
+          },
+        },
+        shuffleArray(array) {
+          const newArray = [...array];
+          for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+          }
+          return newArray;
+        },
+        beforeUnmount() {
+          this.stopTimer();
+        },
+        async mounted() {
+          const response = await fetch("/qa/questions.json"); 
+          const jsonData = await response.json();
+          this.sections = jsonData.sections;
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

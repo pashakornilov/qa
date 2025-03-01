@@ -1,0 +1,282 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #f0f0f0;
+}
+
+.quiz-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.question {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.option:hover {
+  background-color: #e9ecef;
+}
+
+.option.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  .quiz-container {
+    padding: 15px;
+  }
+
+  .option {
+    padding: 12px;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .score-display {
+    font-size: 15px;
+  }
+}
+
+.score-item.timer {
+  color: #0066cc;
+}
+
+.shuffle-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shuffle-controls button {
+  flex: 1;
+  min-width: 200px;
+  transition: background-color 0.3s ease;
+}
+
+.button-enabled {
+  background-color: #28a745 !important;
+}
+
+@media (max-width: 600px) {
+  .shuffle-controls {
+    flex-direction: column;
+  }
+  .shuffle-controls button {
+    width: 100%;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background-color: #6c757d;
+  padding: 8px 16px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .header h2 {
+    margin: 0;
+    width: 100%;
+  }
+
+  .back-button {
+    width: 100%;
+  }
+}
+
+.quiz-summary-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.quiz-summary {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+}
+
+.summary-stats {
+  margin: 20px 0;
+}
+
+.summary-item {
+  margin: 15px 0;
+  font-size: 1.2em;
+}
+
+.summary-item .label {
+  margin-right: 10px;
+}
+
+.summary-item .value {
+  font-weight: bold;
+}
+
+.summary-item .value.correct {
+  color: #28a745;
+}
+
+.summary-item .value.incorrect {
+  color: #dc3545;
+}
+
+.summary-item .value.timer {
+  color: #0066cc;
+}
+
+.back-to-sections {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background-color: #6c757d;
+  padding: 8px 16px;
+}
+.option.correct {
+  background-color: #28a745;
+  color: white;
+}
+
+.option.wrong {
+  background-color: #dc3545;
+  color: white;
+}
+
+.feedback {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.feedback.correct {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.feedback.wrong {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.score-display {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.score-item {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.score-item.correct {
+  color: #28a745;
+}
+
+.score-item.incorrect {
+  color: #dc3545;
+}
+    </style>
