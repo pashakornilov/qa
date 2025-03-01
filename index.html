@@ -64,6 +64,9 @@
 
           <div class="question">
             <p>{{ currentQuestion.text }}</p>
+            <p class="answer-type" style="color: #666; font-size: 0.9em; margin-top: 5px;">
+              {{ currentQuestion.correctAnswer.length > 1 ? '(выберите ответы)' : '(выберите ответ)' }}
+            </p>
           </div>
           <div class="options">
             <div
